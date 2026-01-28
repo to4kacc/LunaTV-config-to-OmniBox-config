@@ -1,0 +1,48 @@
+name: 自动转换站点数据
+
+on:
+  # 两种触发方式：
+  # 1. 手动触发（在 GitHub 仓库页面操作）
+  workflow_dispatch:
+  # 2. 自动触发
+  schedule:
+    - cron: '0 */4 * * *'
+
+jobs:
+  convert-and-commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 步骤 1: 检出仓库代码
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      # 步骤 2: 设置 Python 环境
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      # 步骤 3: 拉取原始数据并转换为新格式
+      - name: 拉取并转换数据
+        run: |
+          # 使用 curl 获取原始 JSON 数据，并通过管道传递给 Python 脚本处理
+          curl -s "https://raw.githubusercontent.com/hafrey1/LunaTV-config/refs/heads/main/jingjian.json" | python3 convert_data.py > converted_data.json
+      
+      # 步骤 4: 将转换后的文件提交回仓库
+      - name: 提交更新
+        run: |
+          # 配置 Git 用户信息
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # 检查文件是否有变化，有变化则提交
+          git add converted_data.json
+          if git diff --cached --quiet; then
+            echo "数据无变化，无需提交。"
+          else
+            git commit -m "自动更新：转换站点数据 [$(date +'%Y-%m-%d %H:%M:%S')]"
+            git push origin HEAD:${{ github.ref }}
+          fi
