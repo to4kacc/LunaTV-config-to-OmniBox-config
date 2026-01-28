@@ -60,16 +60,16 @@ jobs:
           else
             # 获取时间戳和统计信息用于提交消息
             TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
-            STATS=$(python3 -c "
+            # 【修改点】只计算总站点数
+            TOTAL_COUNT=$(python3 -c "
             import json
             with open('converted_data.json', 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            adult = len([s for s in data['sites'] if s['tags'] == ['成人']])
-            excellent = len([s for s in data['sites'] if s['tags'] == ['优秀']])
-            print(f'({excellent}优秀/{adult}成人)')
+            total = len(data['sites'])
+            print(f'(共{total}个站点)')
             " 2>/dev/null || echo "")
             
-            git commit -m "自动更新：转换站点数据 $STATS [$TIMESTAMP]"
+            git commit -m "自动更新：转换站点数据 $TOTAL_COUNT [$TIMESTAMP]"
             git push
             echo "提交成功！"
           fi
