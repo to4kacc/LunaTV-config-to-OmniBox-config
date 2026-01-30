@@ -2,8 +2,8 @@ name: 自动转换站点数据
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0/6 * * *'
+  # schedule:
+    # - cron: '0 0/6 * * *'
 
 jobs:
   convert-and-commit:
